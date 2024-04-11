@@ -6,8 +6,7 @@ from perceptron import Perceptron
 chars = "abcdefghijklmnopqrstuvwxyz"
 
 
-def train_network(epoch=100, print_epoch = True):
-    global perceptron
+def train_network(training_set, layer, epoch=100, print_epoch = True):
     for epoch in range(epoch):
         if print_epoch:
             print(f'Epoch {epoch}')
@@ -52,17 +51,70 @@ def process_data():
 
     return classes, df, vectors
 
+def test_network(text, layer, df):
+    lang_vector = np.zeros(26)
+    count = 0
+    for char in text:
+        if char in chars:
+            lang_vector[chars.index(char)] += 1
+            count += 1
+    lang_vector = lang_vector / count
 
-if __name__ == '__main__':
+    prediction = [perceptron.predict(lang_vector) for perceptron in layer]
+    max_similarity = 0
+    lang = ''
+    for index, row in df.iterrows():
+        evaluation = np.dot(prediction, row)
+        if evaluation > max_similarity:
+            max_similarity = evaluation
+            lang = index
+    print(f'Text: {text} - Language: {lang} , Prediction: {max_similarity}')
 
-    classes, df, vectors = process_data()
 
-    layer = [Perceptron(26) for i in range(classes.__len__())]
-
+def generate_train_set():
     training_set = pd.DataFrame()
     for lclass in classes:
         testing_slice = pd.DataFrame(vectors[lclass])
         testing_slice['class'] = lclass
         training_set = pd.concat([training_set, testing_slice])
+    return training_set
 
-    train_network(epoch=1000)
+def print_menu():
+    print('1. Predict text',
+          '2. Train network',
+          '3. Print language vectors',
+          '4. Print every perceptron',
+          '5. Exit', sep='\n')
+
+
+if __name__ == '__main__':
+
+    classes, df, vectors = process_data()
+
+    # print(df)
+
+    layer = [Perceptron(26) for i in range(classes.__len__())]
+
+    training_set = generate_train_set()
+    # train_network(training_set, layer, epoch=1000, print_epoch=False)
+    #
+    # text_to_predict = 'Während die anderen Landesteile des Vereinigten Königreichs (Nordirland, Schottland, Wales) aufgrund der Devolution eigene Parlamente besitzen, die in den entsprechenden Landesteilen Sonderrechte gegenüber der britischen Zentralregierung in London haben, ist dies für England nicht der Fall.'
+    # test_network(text_to_predict, layer, df)
+    #
+    print_menu()
+    while (user_input := input('Input: ').lower()) != '5':
+
+        if user_input == '1':
+            text_to_predict = input('Enter text to predict: ')
+            test_network(text_to_predict, layer, df)
+        elif user_input == '2':
+            train_network(training_set, layer, epoch=1000)
+        elif user_input == '3':
+            print(df)
+        elif user_input == '4':
+            for perceptron in layer:
+                print(perceptron)
+        else:
+            print('Invalid option')
+            print_menu()
+        print_menu()

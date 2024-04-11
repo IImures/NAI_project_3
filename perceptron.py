@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Perceptron:
-    def __init__(self, num_inputs, learning_rate=1):
+    def __init__(self, num_inputs, learning_rate=0.1):
         self.weights = np.random.rand(num_inputs)
         self.learning_rate = learning_rate
 
@@ -22,6 +22,4 @@ class Perceptron:
     def __str__(self):
         return (f"\n"
                 f"Weights: {self.weights}"
-                f"\nBias: {self.bias} "
-                f"\nClass: {self.lclass} "
                 f"\nLearning rate: {self.learning_rate}")
